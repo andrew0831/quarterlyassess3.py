@@ -1,5 +1,46 @@
+import sqlite3
 import tkinter as tk
 from tkinter import messagebox, ttk
+
+# Connect to the database (create if not exists)
+conn = sqlite3.connect('quiz_database.db')
+cursor = conn.cursor()
+
+# Create a table to store quiz categories
+cursor.execute('''CREATE TABLE IF NOT EXISTS Categories (
+                    CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Name TEXT NOT NULL
+                    )''')
+
+# Create a table to store quiz questions
+cursor.execute('''CREATE TABLE IF NOT EXISTS Questions (
+                    QuestionID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    CategoryID INTEGER NOT NULL,
+                    QuestionText TEXT NOT NULL,
+                    FOREIGN KEY (CategoryID) REFERENCES Categories(CategoryID)
+                    )''')
+
+# Create a table to store options for each question
+cursor.execute('''CREATE TABLE IF NOT EXISTS Options (
+                    OptionID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    QuestionID INTEGER NOT NULL,
+                    OptionText TEXT NOT NULL,
+                    IsCorrect INTEGER NOT NULL DEFAULT 0,
+                    FOREIGN KEY (QuestionID) REFERENCES Questions(QuestionID)
+                    )''')
+
+# Create a table to store user responses
+cursor.execute('''CREATE TABLE IF NOT EXISTS UserResponses (
+                    ResponseID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    QuestionID INTEGER NOT NULL,
+                    SelectedOptionID INTEGER NOT NULL,
+                    FOREIGN KEY (QuestionID) REFERENCES Questions(QuestionID),
+                    FOREIGN KEY (SelectedOptionID) REFERENCES Options(OptionID)
+                    )''')
+
+# Commit the changes and close the connection
+conn.commit()
+conn.close()
 
 
 QUESTIONS = {
@@ -83,9 +124,9 @@ class Question:
     def on_next_click(self):
         is_correct = self.user_answer.get() == self.answer
         if is_correct:
-            messagebox.showinfo("Correct", "That's the right answer!")
+            messagebox.showinfo("Correct", "That's Correct!")
         else:
-            messagebox.showinfo("Incorrect", "Oops! That's not right.")
+            messagebox.showinfo("Incorrect", "That's Incorrect.")
         
         self.callback_on_next(is_correct)
 
@@ -141,3 +182,4 @@ def category_selection_window():
     window.mainloop()
 
 category_selection_window()
+
